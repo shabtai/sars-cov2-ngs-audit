@@ -6,182 +6,148 @@
 <title>Natural Joints — Semantic Enrichment for Scientific Data</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html, body { height: 100%; overflow: hidden; }
-
   body {
     background: #1a1a2e;
     color: #e0e0e0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    line-height: 1.5;
+    line-height: 1.4;
     display: flex;
     flex-direction: column;
   }
-
-  a { color: #4fc3f7; text-decoration: none; transition: color 0.2s; }
+  a { color: #4fc3f7; text-decoration: none; }
   a:hover { color: #26c6da; }
 
-  /* ── Layout ── */
   .page {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-width: 1000px;
+    max-width: 960px;
     margin: 0 auto;
-    padding: 24px 32px;
+    padding: 16px 28px;
     width: 100%;
+    gap: 16px;
   }
 
-  /* ── Header row ── */
-  .header {
-    text-align: center;
-    margin-bottom: 28px;
-  }
-
+  /* Header */
+  .header { text-align: center; }
   .brand {
-    font-size: 2.6rem;
+    font-size: 2.2rem;
     font-weight: 700;
-    letter-spacing: -1px;
     background: linear-gradient(135deg, #4fc3f7, #26c6da);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     display: inline-block;
   }
-
   .helix {
     display: inline-block;
     position: relative;
-    margin-right: 10px;
-    width: 30px;
-    height: 40px;
+    margin-right: 8px;
+    width: 26px; height: 34px;
     vertical-align: middle;
   }
-
   .helix::before, .helix::after {
     content: '';
     position: absolute;
-    width: 24px; height: 24px;
-    border: 2.5px solid transparent;
+    width: 20px; height: 20px;
+    border: 2px solid transparent;
     border-radius: 50%;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
   }
-
-  .helix::before {
-    border-top-color: #4fc3f7;
-    border-right-color: #4fc3f7;
-    animation: spin 6s linear infinite;
-  }
-
-  .helix::after {
-    border-bottom-color: #26c6da;
-    border-left-color: #26c6da;
-    animation: spin 6s linear infinite reverse;
-  }
-
-  @keyframes spin {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to   { transform: translate(-50%, -50%) rotate(360deg); }
-  }
-
+  .helix::before { border-top-color: #4fc3f7; border-right-color: #4fc3f7; animation: spin 6s linear infinite; }
+  .helix::after { border-bottom-color: #26c6da; border-left-color: #26c6da; animation: spin 6s linear infinite reverse; }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
   .helix-dot {
     position: absolute;
-    width: 4px; height: 4px;
+    width: 3px; height: 3px;
     border-radius: 50%;
     background: #26c6da;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 6px #26c6da;
+    box-shadow: 0 0 5px #26c6da;
   }
 
-  .tagline {
-    font-size: 0.95rem;
+  /* What We Do — compact row */
+  .wwd {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .wwd-card {
+    background: #16213e;
+    border: 1px solid rgba(79,195,247,0.12);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .wwd-card h3 {
+    color: #4fc3f7;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .wwd-card p {
     color: #a0a0b8;
-    margin-top: 4px;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
+    font-size: 0.72rem;
+    line-height: 1.4;
   }
 
-  /* ── Case Study Card ── */
+  /* Case Study */
   .case-study {
     background: #16213e;
     border: 1px solid rgba(79,195,247,0.15);
-    border-radius: 14px;
-    padding: 28px 32px;
+    border-radius: 10px;
+    padding: 16px 20px;
     position: relative;
     overflow: hidden;
-    margin-bottom: 20px;
   }
-
   .case-study::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
+    height: 2px;
     background: linear-gradient(90deg, #4fc3f7, #26c6da);
   }
-
-  .case-study-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
-    margin-bottom: 20px;
-  }
-
-  .case-study-info { flex: 1; }
-
   .case-study-label {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 2px;
     color: #26c6da;
-    margin-bottom: 6px;
     font-weight: 600;
+    margin-bottom: 3px;
   }
-
   .case-study h3 {
-    font-size: 1.15rem;
+    font-size: 0.9rem;
     color: #e0e0e0;
     font-weight: 600;
-    line-height: 1.35;
-    margin-bottom: 4px;
+    line-height: 1.3;
+    margin-bottom: 2px;
   }
-
   .case-study-meta {
     color: #a0a0b8;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
+    margin-bottom: 10px;
   }
+  .case-study-meta a { margin-left: 10px; }
 
-  .case-study-meta a { margin-left: 12px; font-size: 0.8rem; }
-
-  /* ── Stats row ── */
+  /* Stats */
   .stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
-
   .stat-box {
-    background: rgba(79,195,247,0.06);
-    border: 1px solid rgba(79,195,247,0.15);
-    border-radius: 8px;
-    padding: 14px 12px;
+    background: rgba(79,195,247,0.05);
+    border: 1px solid rgba(79,195,247,0.12);
+    border-radius: 6px;
+    padding: 8px 6px;
     text-align: center;
-    transition: border-color 0.2s, background 0.2s;
   }
-
-  .stat-box:hover {
-    border-color: rgba(79,195,247,0.35);
-    background: rgba(79,195,247,0.1);
-  }
-
   .stat-number {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 700;
     background: linear-gradient(135deg, #4fc3f7, #26c6da);
     -webkit-background-clip: text;
@@ -189,73 +155,61 @@
     background-clip: text;
     line-height: 1.2;
   }
-
   .stat-label {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
     color: #a0a0b8;
-    margin-top: 4px;
-    line-height: 1.3;
+    margin-top: 2px;
+    line-height: 1.25;
   }
 
-  /* ── Report links ── */
+  /* Report links */
   .report-links {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 8px;
   }
-
   .report-link {
     display: block;
-    background: rgba(38,198,218,0.06);
-    border: 1px solid rgba(79,195,247,0.15);
-    border-radius: 8px;
-    padding: 24px 24px;
+    background: rgba(38,198,218,0.05);
+    border: 1px solid rgba(79,195,247,0.12);
+    border-radius: 6px;
+    padding: 12px 14px;
     transition: transform 0.2s, border-color 0.2s, background 0.2s;
     cursor: pointer;
-    min-height: 90px;
   }
-
   .report-link:hover {
-    transform: translateY(-2px);
-    border-color: rgba(38,198,218,0.45);
-    background: rgba(38,198,218,0.12);
+    transform: translateY(-1px);
+    border-color: rgba(38,198,218,0.4);
+    background: rgba(38,198,218,0.1);
     color: #e0e0e0;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   }
-
   .report-link strong {
     display: block;
     color: #26c6da;
-    font-size: 1.05rem;
-    margin-bottom: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 3px;
   }
-
   .report-link span {
     color: #a0a0b8;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: 0.72rem;
   }
 
-  /* ── Footer ── */
+  /* Footer */
   .footer {
     text-align: center;
-    padding: 16px 0;
+    padding: 10px 0;
     color: #a0a0b8;
-    font-size: 0.78rem;
-    border-top: 1px solid rgba(79,195,247,0.1);
+    font-size: 0.68rem;
+    border-top: 1px solid rgba(79,195,247,0.08);
   }
-
   .footer a { color: #4fc3f7; }
 
-  /* ── Responsive ── */
   @media (max-width: 768px) {
     html, body { overflow: auto; }
-    .page { padding: 20px 16px; }
-    .brand { font-size: 2rem; }
+    .wwd { grid-template-columns: 1fr; }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .report-links { grid-template-columns: 1fr; }
-    .case-study-top { flex-direction: column; }
-    .case-study { padding: 20px; }
   }
 </style>
 </head>
@@ -263,27 +217,33 @@
 
 <div class="page">
 
-  <!-- Header -->
   <div class="header">
-    <div>
-      <span class="helix"><span class="helix-dot"></span></span><span class="brand">Natural Joints</span>
-    </div>
-    <p class="tagline">Enrich datasets with column meanings and relationships. Fact-check reference data against domain knowledge. Audit analysis code and paper claims for honesty.</p>
+    <span class="helix"><span class="helix-dot"></span></span><span class="brand">Natural Joints</span>
   </div>
 
-  <!-- Case Study -->
-  <div class="case-study">
-    <div class="case-study-top">
-      <div class="case-study-info">
-        <div class="case-study-label">Paper Audit</div>
-        <h3>High throughput SARS-CoV-2 variant analysis using molecular barcodes coupled with NGS</h3>
-        <p class="case-study-meta">
-          Cohen-Aharonov et al., 2022
-          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9212143/" target="_blank">PMC</a>
-          <a href="https://github.com/Adarya/SARS-CoV-2_NGS_Barcodes" target="_blank">GitHub</a>
-        </p>
-      </div>
+  <div class="wwd">
+    <div class="wwd-card">
+      <h3>Enrich</h3>
+      <p>Discover column meanings, relationships, and data contracts in CSV, Parquet, and cloud data using LLM agents.</p>
     </div>
+    <div class="wwd-card">
+      <h3>Audit</h3>
+      <p>Fact-check reference data against domain knowledge, verify analysis code, and assess paper honesty.</p>
+    </div>
+    <div class="wwd-card">
+      <h3>Protect</h3>
+      <p>Detect data traps: zero-as-missing, cross-contamination, grain confusion, compositional artifacts, and more.</p>
+    </div>
+  </div>
+
+  <div class="case-study">
+    <div class="case-study-label">Paper Audit</div>
+    <h3>High throughput SARS-CoV-2 variant analysis using molecular barcodes coupled with NGS</h3>
+    <p class="case-study-meta">
+      Cohen-Aharonov et al., 2022
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9212143/" target="_blank">PMC</a>
+      <a href="https://github.com/Adarya/SARS-CoV-2_NGS_Barcodes" target="_blank">GitHub</a>
+    </p>
 
     <div class="stats">
       <div class="stat-box">
@@ -318,11 +278,9 @@
 
 </div>
 
-<!-- Footer -->
 <div class="footer">
   Powered by <a href="https://www.natural-joints.com/">Natural Joints</a> &middot;
-  <a href="mailto:ran@natural-joints.com">ran@natural-joints.com</a> &middot;
-  &copy; 2026
+  <a href="mailto:ran@natural-joints.com">ran@natural-joints.com</a> &middot; &copy; 2026
 </div>
 
 </body>
