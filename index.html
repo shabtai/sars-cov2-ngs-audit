@@ -100,6 +100,9 @@
     font-size: 0.95rem;
     color: #a0a0b8;
     margin-top: 4px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* ── Case Study Card ── */
@@ -206,27 +209,31 @@
     background: rgba(38,198,218,0.06);
     border: 1px solid rgba(79,195,247,0.15);
     border-radius: 8px;
-    padding: 16px 20px;
+    padding: 24px 24px;
     transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    cursor: pointer;
+    min-height: 90px;
   }
 
   .report-link:hover {
     transform: translateY(-2px);
-    border-color: rgba(38,198,218,0.35);
-    background: rgba(38,198,218,0.1);
+    border-color: rgba(38,198,218,0.45);
+    background: rgba(38,198,218,0.12);
     color: #e0e0e0;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
   }
 
   .report-link strong {
     display: block;
     color: #26c6da;
-    font-size: 0.95rem;
-    margin-bottom: 4px;
+    font-size: 1.05rem;
+    margin-bottom: 6px;
   }
 
   .report-link span {
     color: #a0a0b8;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
   }
 
   /* ── Footer ── */
@@ -261,7 +268,7 @@
     <div>
       <span class="helix"><span class="helix-dot"></span></span><span class="brand">Natural Joints</span>
     </div>
-    <p class="tagline">AI-powered semantic enrichment &middot; audit &middot; fact-checking for scientific data</p>
+    <p class="tagline">Enrich datasets with column meanings and relationships. Fact-check reference data against domain knowledge. Audit analysis code and paper claims for honesty.</p>
   </div>
 
   <!-- Case Study -->
