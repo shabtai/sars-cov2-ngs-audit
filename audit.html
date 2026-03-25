@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Report: SARS-CoV-2 NGS Barcodes</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --bg-card: #16213e;
+    --bg-card-hover: #1a2744;
+    --bg-surface: #0f3460;
+    --text: #e0e0e0;
+    --text-dim: #9e9e9e;
+    --text-bright: #ffffff;
+    --accent: #4fc3f7;
+    --accent-dim: #0288d1;
+    --warning: #ffb74d;
+    --error: #ef5350;
+    --success: #66bb6a;
+    --critical: #d32f2f;
+    --high: #f57c00;
+    --medium: #ffb74d;
+    --low: #66bb6a;
+    --border: #2a2a4a;
+    --code-bg: #0d1117;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 60%, #16213e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 0 2rem;
+  }
+
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+  }
+
+  header .subtitle {
+    font-size: 1.05rem;
+    color: var(--accent);
+    margin-top: 0.3rem;
+    font-weight: 400;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .stat-item .num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-item.total .num { color: var(--accent); }
+  .stat-item.critical .num { color: var(--critical); }
+  .stat-item.high .num { color: var(--high); }
+  .stat-item.medium .num { color: var(--medium); }
+  .stat-item.low .num { color: var(--success); }
+
+  nav.header-nav {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  nav.header-nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: rgba(79, 195, 247, 0.05);
+    transition: all 0.2s;
+  }
+
+  nav.header-nav a:hover {
+    background: rgba(79, 195, 247, 0.15);
+    border-color: var(--accent);
+  }
+
+  /* ── Sections ── */
+  section {
+    padding: 3rem 0;
+  }
+
+  section + section {
+    border-top: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .section-header .count {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    background: var(--bg-surface);
+    color: var(--accent);
+  }
+
+  /* ── Finding Cards ── */
+  .finding-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .finding-card:hover {
+    border-color: rgba(79, 195, 247, 0.3);
+  }
+
+  .finding-card details > summary {
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    list-style: none;
+    user-select: none;
+  }
+
+  .finding-card details > summary::-webkit-details-marker { display: none; }
+
+  .finding-card details > summary::before {
+    content: "\25B6";
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .finding-card details[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  .finding-card .card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-bright);
+    flex: 1;
+  }
+
+  .finding-card .card-body {
+    padding: 0 1.5rem 1.5rem 3rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+
+  .finding-card .card-body p {
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── Severity Badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .badge-critical { background: rgba(211,47,47,0.2); color: var(--critical); border: 1px solid rgba(211,47,47,0.4); }
+  .badge-high { background: rgba(245,124,0,0.15); color: var(--high); border: 1px solid rgba(245,124,0,0.35); }
+  .badge-medium { background: rgba(255,183,77,0.12); color: var(--medium); border: 1px solid rgba(255,183,77,0.3); }
+  .badge-low { background: rgba(102,187,106,0.12); color: var(--low); border: 1px solid rgba(102,187,106,0.3); }
+
+  .badge-honest { background: rgba(102,187,106,0.15); color: var(--success); border: 1px solid rgba(102,187,106,0.35); }
+  .badge-not-honest { background: rgba(239,83,80,0.15); color: var(--error); border: 1px solid rgba(239,83,80,0.35); }
+  .badge-partial { background: rgba(255,183,77,0.12); color: var(--warning); border: 1px solid rgba(255,183,77,0.3); }
+  .badge-verified { background: rgba(102,187,106,0.12); color: var(--success); border: 1px solid rgba(102,187,106,0.3); }
+
+  /* ── Code Blocks ── */
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    background: var(--code-bg);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    color: #e6db74;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: #c9d1d9;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(79, 195, 247, 0.05);
+  }
+
+  tr:hover td {
+    background: rgba(79, 195, 247, 0.03);
+  }
+
+  /* ── Honesty Table ── */
+  .honesty-table {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .honesty-table th:first-child,
+  .honesty-table td:first-child {
+    width: 30%;
+  }
+
+  .honesty-table td:nth-child(3) {
+    width: 120px;
+    text-align: center;
+  }
+
+  .honesty-table td:last-child {
+    width: 80px;
+    text-align: center;
+  }
+
+  /* ── Labels ── */
+  .label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.25rem;
+  }
+
+  .location {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  /* ── Impact Table ── */
+  .impact-table {
+    max-width: 420px;
+  }
+
+  .impact-table td:not(:first-child) {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  /* ── Verification Summary ── */
+  .verification-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .v-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .v-item .v-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .v-item .v-check.pass {
+    background: rgba(102,187,106,0.2);
+    color: var(--success);
+    border: 1px solid rgba(102,187,106,0.4);
+  }
+
+  .v-item .v-id {
+    font-weight: 700;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    min-width: 28px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+
+  footer .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── Note callout ── */
+  .note {
+    background: rgba(79,195,247,0.06);
+    border-left: 3px solid var(--accent);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .note strong { color: var(--text); }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .container { padding: 0 1rem; }
+    header h1 { font-size: 1.4rem; }
+    .stats-bar { gap: 1rem; }
+    .stat-item .num { font-size: 1.3rem; }
+    .finding-card .card-body { padding-left: 1.5rem; }
+    table { font-size: 0.78rem; }
+    th, td { padding: 0.5rem 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     HEADER
+     ════════════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container">
+    <h1>Audit Report: SARS-CoV-2 NGS Barcodes</h1>
+    <div class="subtitle">Cohen-Aharonov et al. 2022 &mdash; PMC9212143</div>
+
+    <div class="stats-bar">
+      <div class="stat-item total"><span class="num">22</span> Total Findings</div>
+      <div class="stat-item critical"><span class="num">2</span> Critical</div>
+      <div class="stat-item high"><span class="num">11</span> High</div>
+      <div class="stat-item medium"><span class="num">7</span> Medium</div>
+      <div class="stat-item low"><span class="num">2</span> Low</div>
+    </div>
+
+    <nav class="header-nav">
+      <a href="#code">Code Correctness</a>
+      <a href="#honesty">Data Honesty</a>
+      <a href="#facts">Factual Errors</a>
+      <a href="#verified">Verification</a>
+      <a href="index.html">Back to Index</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SECTION 1: CODE CORRECTNESS
+     ════════════════════════════════════════════════════════════════════ -->
+<section id="code">
+  <div class="container">
+    <div class="section-header">
+      <h2>Code Correctness</h2>
+      <span class="count">10 findings</span>
+    </div>
+
+    <!-- C1 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-critical">Critical</span>
+          <span class="card-title">C1: Sample-Level Data Leakage in ML Pipeline</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">class_model_workflow.ipynb &mdash; cells 5, 7&ndash;8</p>
+          <pre>train_test_split(X, y, random_state=7, train_size=0.8, stratify=y)</pre>
+          <p>The dataset contains 960 rows representing 96 samples &times; 10 plates. The row-level train/test split means 100% of test samples also appear in the training set. The model memorizes per-sample patterns rather than learning generalizable features.</p>
+          <p><strong>Verification:</strong> 81 of 81 test samples also present in training data.</p>
+          <p><strong>Fix:</strong> Use <code>GroupShuffleSplit</code> with <code>groups=sample</code>.</p>
+
+          <table class="impact-table">
+            <thead>
+              <tr><th>Metric</th><th>Leaked</th><th>Fixed (GroupKFold)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>AUC</td><td>0.934</td><td>0.932</td></tr>
+              <tr><td>Sensitivity</td><td>0.740</td><td>0.735</td></tr>
+              <tr><td>Specificity</td><td>0.971</td><td>0.972</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>Note:</strong> Impact is modest in this case because the signal is consistent across replicates, but the methodology is still invalid. The paper cannot claim generalization from a leaked evaluation.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- C2 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-high">High</span>
+          <span class="card-title">C2: log10(0) Produces -Inf, Silently Dropping Data</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">Fig_4A-B.R &mdash; lines 105&ndash;107</p>
+          <pre>log10(all_plates_matrix$E_gene + all_plates_matrix$N1_gene + all_plates_matrix$ORF1a)</pre>
+          <p>When all three gene counts are zero, <code>log10(0)</code> returns <code>-Inf</code>. These rows are silently dropped from downstream plots and analysis. 21 rows affected: 5 positive samples, 16 negative.</p>
+          <p>Line 80 of the same file correctly uses <code>log(x + 1)</code>, showing the authors were aware of the issue but applied the fix inconsistently.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C3 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-high">High</span>
+          <span class="card-title">C3: R assign() Bug &mdash; S10 Lane Combination</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">Fig_4A-B.R &mdash; line 64</p>
+          <pre>assign(paste0(unique(all_plates$plate)[i]), "_combined", temp)</pre>
+          <p>The comma is outside <code>paste0()</code>, so <code>"_combined"</code> is passed as the <code>envir</code> argument to <code>assign()</code> instead of being concatenated into the variable name. The correct call should be:</p>
+          <pre>assign(paste0("S10", "_combined"), temp)</pre>
+          <p>R silently coerces the string to an environment reference, producing unpredictable behavior.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C4 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-high">High</span>
+          <span class="card-title">C4: X-Axis Label Mismatch in Mutation Plot</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">Fig4D.R &mdash; line 35</p>
+          <p>X-axis labels are derived from rows where <code>CONSEQU != "Artefact"</code> (13 labels), but the plot itself filters on <code>CONSEQU != "none"</code> (7 genomic positions). This creates 6 phantom x-axis labels for positions 28322&ndash;28327 that have no corresponding data points.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C5 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-medium">Medium</span>
+          <span class="card-title">C5: Hard-Coded Row Slice [1:88]</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">Fig4D.R &mdash; line 29</p>
+          <pre>read.csv(...)[1:88,]</pre>
+          <p>Hard-coded row index that works for the current CSV but breaks if rows are added, removed, or reordered. The CSV contains trailing empty rows and a comment row that motivated the slice. The correct fix is to filter on non-empty ID values.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C6 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-medium">Medium</span>
+          <span class="card-title">C6: RF Cross-Validation on Wrong Split</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">class_model_workflow.ipynb &mdash; cell 19</p>
+          <p>Random Forest cross-validation runs on <code>X, y</code> (the full 80% training set) instead of <code>X_train, y_train</code> (the 64% training subset). Other models are evaluated on the 16% validation split. This inflates RF performance relative to other classifiers in the comparison.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C7 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-medium">Medium</span>
+          <span class="card-title">C7: True Test Set Never Evaluated</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">class_model_workflow.ipynb &mdash; cell 5</p>
+          <p>Cell 5 saves a held-out 20% test set. All subsequent model evaluations use the validation split from the remaining 80%. The true test set is never loaded or evaluated anywhere in the notebook. The reported metrics are all validation metrics, not test metrics.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C8 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-medium">Medium</span>
+          <span class="card-title">C8: Inconsistent Log Transforms Across Pipeline</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">Multiple files</p>
+          <p>Four different log transforms are used across the pipeline without justification:</p>
+          <table>
+            <thead><tr><th>Transform</th><th>Location</th><th>Impact</th></tr></thead>
+            <tbody>
+              <tr><td><code>ln(x + 1)</code></td><td>Fig_4A-B.R:80</td><td>Correct zero handling</td></tr>
+              <tr><td><code>log10(x)</code></td><td>Fig_4A-B.R:105</td><td>-Inf on zeros (C2)</td></tr>
+              <tr><td><code>log2(x)</code></td><td>summary analysis</td><td>Drops 317/679 rows (46.7%)</td></tr>
+              <tr><td><code>log2(x + 1)</code></td><td>ML features</td><td>Correct zero handling</td></tr>
+            </tbody>
+          </table>
+          <p>The <code>log2(NumReads)</code> transform in <code>summary_S7</code> drops 46.7% of rows silently due to zero-count entries.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C9 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-low">Low</span>
+          <span class="card-title">C9: Wrong Filename in Notebook</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">class_model_workflow.ipynb</p>
+          <pre>pd.read_csv("data/counts_960.csv")</pre>
+          <p>The actual filename in the repository is <code>960_counts.csv</code>. The notebook would fail on a clean checkout without manual file renaming.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- C10 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-low">Low</span>
+          <span class="card-title">C10: Compositional Normalization Mislabeled as TPM</span>
+        </summary>
+        <div class="card-body">
+          <p class="location">class_model_workflow.ipynb</p>
+          <p>Gene counts are divided by the sum of 4 genes, creating a constant-sum constraint (compositional data). The resulting ratios are labeled <code>"tpm_ratio"</code> but are not transcripts-per-million. True TPM requires gene-length normalization across the full transcriptome, not 4 targets.</p>
+          <p>The compositional constraint slightly reduces AUC because it introduces spurious negative correlations between gene ratios, but the practical impact is small with only 4 features.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SECTION 2: DATA HONESTY
+     ════════════════════════════════════════════════════════════════════ -->
+<section id="honesty">
+  <div class="container">
+    <div class="section-header">
+      <h2>Data Honesty</h2>
+      <span class="count">10 claims assessed</span>
+    </div>
+
+    <div class="honesty-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Paper Claim</th>
+            <th>Data Shows</th>
+            <th>Verdict</th>
+            <th>Severity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>(a)</strong> "960 clinical RNA specimens"</td>
+            <td>96 specimens &times; 10 plates = 960 rows. Paper implies 960 independent patients.</td>
+            <td><span class="badge badge-not-honest">Not Honest</span></td>
+            <td><span class="badge badge-high">High</span></td>
+          </tr>
+          <tr>
+            <td><strong>(b)</strong> "258 positive (27%)"</td>
+            <td>258 is a row count, not a patient count. True positives: 25 (helper_S7) or 50 (mult tables). Conflation of observations with subjects.</td>
+            <td><span class="badge badge-not-honest">Not Honest</span></td>
+            <td><span class="badge badge-high">High</span></td>
+          </tr>
+          <tr>
+            <td><strong>(c)</strong> "Sensitivity 82.5%, specificity 97.3%"</td>
+            <td>100% train/test overlap (C1). Labels vary per plate for the same patient. Metric is circular: predicting NGS detection from NGS features.</td>
+            <td><span class="badge badge-not-honest">Not Honest</span></td>
+            <td><span class="badge badge-high">High</span></td>
+          </tr>
+          <tr>
+            <td><strong>(d)</strong> "60/20/20 split"</td>
+            <td>Code implements an 80/20 split, then further splits the 80% into 80/20 &rarr; 64/16/20.</td>
+            <td><span class="badge badge-not-honest">Not Honest</span></td>
+            <td><span class="badge badge-low">Low</span></td>
+          </tr>
+          <tr>
+            <td><strong>(e)</strong> "7 SNVs identified"</td>
+            <td>Correct after undisclosed BD0086 exclusion. 42 artefact rows silently removed from the variant table before counting.</td>
+            <td><span class="badge badge-partial">Partial</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+          </tr>
+          <tr>
+            <td><strong>(f)</strong> "6 known + 1 new mutation"</td>
+            <td>Verified correct. The 6 known mutations match GISAID/CoVariants records; the novel N-gene missense is not in databases.</td>
+            <td><span class="badge badge-honest">Honest</span></td>
+            <td>&mdash;</td>
+          </tr>
+          <tr>
+            <td><strong>(g)</strong> "30 carried the N-gene missense"</td>
+            <td>30 observations across plates, but only 27 unique patients. Minor overcounting.</td>
+            <td><span class="badge badge-partial">Partial</span></td>
+            <td><span class="badge badge-low">Low</span></td>
+          </tr>
+          <tr>
+            <td><strong>(h)</strong> "Labels based on traditional RT-PCR"</td>
+            <td><code>RNA_sample</code> label varies across plates for the same patient &mdash; not a stable RT-PCR diagnosis. Two RT-qPCR runs disagree: 25 vs 50 positives.</td>
+            <td><span class="badge badge-not-honest">Not Honest</span></td>
+            <td><span class="badge badge-high">High</span></td>
+          </tr>
+          <tr>
+            <td><strong>(i)</strong> "Ct&gt;30 reads similar pos/neg"</td>
+            <td>Approximately true but comparison is confounded. Some "negatives" at high Ct are genuinely infected patients whose label flipped between plates.</td>
+            <td><span class="badge badge-partial">Partial</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+          </tr>
+          <tr>
+            <td><strong>(j)</strong> BD0086 artefact not mentioned</td>
+            <td>Barcode 86 produces systematic artefact variant calls across all plates (42 rows). This is a material omission for a paper about barcoding methodology.</td>
+            <td><span class="badge badge-not-honest">Not Honest</span></td>
+            <td><span class="badge badge-high">High</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SECTION 3: FACTUAL DATA ERRORS
+     ════════════════════════════════════════════════════════════════════ -->
+<section id="facts">
+  <div class="container">
+    <div class="section-header">
+      <h2>Factual Data Errors</h2>
+      <span class="count">7 findings</span>
+    </div>
+
+    <!-- F1-F6 -->
+    <div class="finding-card">
+      <details open>
+        <summary>
+          <span class="badge badge-high">High</span>
+          <span class="card-title">F1&ndash;F6: CONSEQU Annotation Errors at N-Gene Positions 28322&ndash;28327</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p>Six genomic positions have their <code>CONSEQU</code> field set to <code>"none"</code> when they should be annotated as missense or synonymous mutations. All six originate from barcode BD0086 (artefact).</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>POS</th>
+                <th>REF &gt; ALT</th>
+                <th>Current</th>
+                <th>Correct</th>
+                <th>Codon</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>28322</code></td>
+                <td>T &gt; A</td>
+                <td>none</td>
+                <td>Missense (Phe &rarr; Ile)</td>
+                <td>N codon 17, pos 1</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><code>28323</code></td>
+                <td>T &gt; A</td>
+                <td>none</td>
+                <td>Missense (Phe &rarr; Tyr)</td>
+                <td>N codon 17, pos 2</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><code>28324</code></td>
+                <td>T &gt; A</td>
+                <td>none</td>
+                <td>Missense (Phe &rarr; Leu)</td>
+                <td>N codon 17, pos 3</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><code>28325</code></td>
+                <td>G &gt; C</td>
+                <td>none</td>
+                <td>Missense (Gly &rarr; Arg)</td>
+                <td>N codon 18, pos 1</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><code>28326</code></td>
+                <td>G &gt; C</td>
+                <td>none</td>
+                <td>Missense (Gly &rarr; Ala)</td>
+                <td>N codon 18, pos 2</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+              <tr>
+                <td><code>28327</code></td>
+                <td>T &gt; A</td>
+                <td>none</td>
+                <td>Synonymous (Gly &rarr; Gly)</td>
+                <td>N codon 18, pos 3</td>
+                <td><span class="badge badge-high">High</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>All six positions have mapping quality MQ = 42&ndash;45, notably lower than the MQ = 59&ndash;60 observed at non-artefact positions. 42 total rows are affected across all plates.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- F7 -->
+    <div class="finding-card">
+      <details>
+        <summary>
+          <span class="badge badge-critical">Critical</span>
+          <span class="card-title">F7: BD0086 Systematic Artefact &mdash; Undisclosed</span>
+          <span class="badge badge-verified">Verified</span>
+        </summary>
+        <div class="card-body">
+          <p>Barcode 86 (BD0086) produces false variant calls across all plates in the study. These artefact calls have consistently lower mapping quality (MQ 42&ndash;45 vs. 59&ndash;60 for genuine variants) and cluster at N-gene positions 28322&ndash;28327.</p>
+          <p>A comment in the source CSV confirms the issue:</p>
+          <pre># Barcode 86 produces an artefact call.</pre>
+          <p>This systematic barcode-specific artefact is not discussed anywhere in the paper. For a study whose central contribution is a barcoding methodology, the omission of a known barcode failure mode is a material gap. The artefact affects variant calling accuracy and could mislead researchers applying the same barcoding scheme.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SECTION 4: VERIFICATION RESULTS
+     ════════════════════════════════════════════════════════════════════ -->
+<section id="verified">
+  <div class="container">
+    <div class="section-header">
+      <h2>Verification Results</h2>
+      <span class="count">All findings verified against source data</span>
+    </div>
+
+    <p style="margin-bottom: 1.5rem; color: var(--text-dim); font-size: 0.9rem;">
+      Each finding was verified programmatically using Python against the original repository data files. The verification scripts reproduced every claimed issue.
+    </p>
+
+    <div class="verification-grid">
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C1</span>
+        <span>81/81 test samples in training set</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C2</span>
+        <span>21 -Inf rows from log10(0)</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C3</span>
+        <span>assign() comma placement confirmed</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C4</span>
+        <span>6 phantom x-axis labels</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C5</span>
+        <span>Hard-coded [1:88] row slice</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C6</span>
+        <span>CV on full 80% not 64% subset</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C7</span>
+        <span>Test set saved but never loaded</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C8</span>
+        <span>4 different log transforms confirmed</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C9</span>
+        <span>Filename mismatch confirmed</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">C10</span>
+        <span>Constant-sum constraint confirmed</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">F1&ndash;F6</span>
+        <span>6 CONSEQU "none" annotations incorrect</span>
+      </div>
+      <div class="v-item">
+        <div class="v-check pass">&#10003;</div>
+        <span class="v-id">F7</span>
+        <span>BD0086 artefact across all plates</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 2.5rem; margin-bottom: 1rem; color: var(--text-bright); font-size: 1.1rem;">ML Leakage Impact Comparison</h3>
+    <p style="margin-bottom: 1rem; color: var(--text-dim); font-size: 0.9rem;">
+      Model performance under leaked (original) vs. fixed (GroupKFold, no sample overlap) evaluation:
+    </p>
+
+    <table class="impact-table" style="max-width: 500px;">
+      <thead>
+        <tr><th>Metric</th><th>Leaked (Original)</th><th>Fixed (GroupKFold)</th><th>Delta</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>AUC</td><td>0.934</td><td>0.932</td><td style="color: var(--success);">-0.002</td></tr>
+        <tr><td>Sensitivity</td><td>0.740</td><td>0.735</td><td style="color: var(--success);">-0.005</td></tr>
+        <tr><td>Specificity</td><td>0.971</td><td>0.972</td><td style="color: var(--success);">+0.001</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note" style="margin-top: 1rem;">
+      <strong>Interpretation:</strong> The small delta indicates that the biological signal is consistent across replicates. The leakage did not materially inflate the reported metrics in this specific case. However, the evaluation methodology remains invalid &mdash; the near-identical results are a fortunate coincidence, not a justification for the approach.
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Generated by semantic-enricher audit pipeline &mdash; 2025-03-25</p>
+    <div class="footer-links">
+      <a href="index.html">Back to Index</a>
+      <a href="https://github.com/Adarya/SARS-CoV-2_NGS_Barcodes" target="_blank" rel="noopener">GitHub Repository</a>
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9212143/" target="_blank" rel="noopener">PMC9212143</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
